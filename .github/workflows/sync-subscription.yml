@@ -17,13 +17,13 @@ jobs:
 
       - name: 🌐 Скачиваем свежую подписку
         run: |
-          curl -s -L "${{ secrets.SOURCE_SUB_URL }}" -o vpn/subscription_new.txt
+          curl -s -L "${{ secrets.SOURCE_SUB_URL }}" -o https://mygala.ru/vpn/premium.php
 
       - name: 🔍 Сравниваем и обновляем
         run: |
-          if [ -f vpn/subscription_new.txt ]; then
+          if [ -f https://mygala.ru/vpn/premium.php ]; then
             if ! cmp -s vpn/subscription.txt vpn/subscription_new.txt 2>/dev/null; then
-              mv vpn/subscription_new.txt vpn/subscription.txt
+              mv https://mygala.ru/vpn/premium.php vpn/subscription.txt
               git config user.name "GitHub Actions Bot"
               git config user.email "actions@github.com"
               git add vpn/subscription.txt
@@ -31,7 +31,7 @@ jobs:
               git push
               echo "✅ Подписка обновлена!"
             else
-              rm vpn/subscription_new.txt
+              rm https://mygala.ru/vpn/premium.php
               echo "ℹ️ Изменений нет"
             fi
           else
