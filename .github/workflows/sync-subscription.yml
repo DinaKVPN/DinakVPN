@@ -1,0 +1,40 @@
+name: 🔄 Auto Sync Subscription
+
+on:
+  schedule:
+    - cron: '0 */6 * * *'     # каждые 6 часов
+  workflow_dispatch:          # можно запустить вручную
+
+permissions:
+  contents: write
+
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+    steps:
+      - name: 📥 Checkout repo
+        uses: actions/checkout@v4
+
+      - name: 🌐 Скачиваем свежую подписку
+        run: |
+          curl -s -L "${{ secrets.SOURCE_SUB_URL }}" -o vpn/subscription_new.txt
+
+      - name: 🔍 Сравниваем и обновляем
+        run: |
+          if [ -f vpn/subscription_new.txt ]; then
+            if ! cmp -s vpn/subscription.txt vpn/subscription_new.txt 2>/dev/null; then
+              mv vpn/subscription_new.txt vpn/subscription.txt
+              git config user.name "GitHub Actions Bot"
+              git config user.email "actions@github.com"
+              git add vpn/subscription.txt
+              git commit -m "🔄 Auto-sync: обновлена подписка ($(date +'%Y-%m-%d %H:%M'))"
+              git push
+              echo "✅ Подписка обновлена!"
+            else
+              rm vpn/subscription_new.txt
+              echo "ℹ️ Изменений нет"
+            fi
+          else
+            echo "❌ Не удалось скачать источник!"
+            exit 1
+          fi
